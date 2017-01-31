@@ -12,10 +12,10 @@
 //define LEFT 3
 
 //Kickers in front
-#define FRONT 7
-#define RIGHT 3
-#define BACK 5
-#define LEFT 1
+#define FRONT 3
+#define RIGHT 5
+#define BACK 4
+#define LEFT 2
 
 #define KICKERS 0
 #define SPEAKER 1
@@ -114,6 +114,11 @@ void rationalMotors(){
   int back  = atoi(sCmd.next());
   int left  = atoi(sCmd.next());
   int right = atoi(sCmd.next());
+  Serial.println(front);
+  Serial.println(back);
+  Serial.println(left);
+  Serial.println(right);
+
   motorControl(FRONT, -front);
   motorControl(BACK, -back);
   motorControl(LEFT, left);
@@ -139,6 +144,12 @@ void kicker(){
   }
 }
 
+void kickMaafaka(){
+  motorBackward(0, 100);
+  delay(300);
+  motorStop(0);
+}
+
 void completeHalt(){
   motorAllStop();
   motorControl(FRONT, 0);
@@ -155,7 +166,7 @@ void setup(){
   sCmd.addCommand("motor", spinmotor); 
   sCmd.addCommand("r", rationalMotors); 
   sCmd.addCommand("ping", pingMethod); 
-  sCmd.addCommand("kick", kicker); 
+  sCmd.addCommand("kick", kickMaafaka); 
   sCmd.addCommand("mux", muxTest); 
   SDPsetup();
   helloWorld();
