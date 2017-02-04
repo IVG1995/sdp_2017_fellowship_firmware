@@ -13,12 +13,12 @@
 
 //Kickers in front
 #define FRONT 3
-#define RIGHT 5
+#define RIGHT 2
 #define BACK 4
-#define LEFT 2
+#define LEFT 5
 
 #define KICKERS 0
-#define SPEAKER 1
+#define GRABBER 1
 
 #define OPADDR 0x5A
 #define REGADDR 0x04
@@ -83,28 +83,11 @@ void spinmotor(){
 
 void motorControl(int motor, int power){
   if(power == 0){
-      Wire.beginTransmission(OPADDR);
-      Wire.write(motor);
-      Wire.write(0);
-      Wire.endTransmission();
+    motorStop(motor);
   } else if(power > 0){
-      Wire.beginTransmission(OPADDR);
-      Wire.write(motor);
-      Wire.write(1);
-      Wire.endTransmission();
-      Wire.beginTransmission(OPADDR);
-      Wire.write(motor + 1);
-      Wire.write(power);
-      Wire.endTransmission();
+    motorForward(motor, power);
   } else {
-      Wire.beginTransmission(OPADDR);
-      Wire.write(motor);
-      Wire.write(2);
-      Wire.endTransmission();
-      Wire.beginTransmission(OPADDR);
-      Wire.write(motor + 1);
-      Wire.write(-power);
-      Wire.endTransmission();
+    motorBackward(motor, -power);
   }
 }
 
@@ -119,10 +102,10 @@ void rationalMotors(){
   Serial.println(left);
   Serial.println(right);
 
-  motorControl(FRONT, -front);
-  motorControl(BACK, -back);
+  motorControl(FRONT, front);
+  motorControl(BACK, back);
   motorControl(LEFT, left);
-  motorControl(RIGHT, -right);
+  motorControl(RIGHT, right);
 }
 
 void pingMethod(){
@@ -144,11 +127,24 @@ void kicker(){
   }
 }
 
-void kickMaafaka(){
-  motorBackward(0, 100);
-  delay(300);
-  motorStop(0);
+void kick(){
+  motorBackward(KICKERS, 100);
+  delay(700);
+  motorStop(KICKERS);
 }
+
+void grab(){
+  motorForward(GRABBER, 100);
+  delay(500);
+  motorStop(GRABBER);
+}
+
+void ungrab(){
+  motorBackward(GRABBER, 100);
+  delay(300);
+  motorStop(GRABBER);
+}
+
 
 void completeHalt(){
   motorAllStop();
@@ -166,7 +162,9 @@ void setup(){
   sCmd.addCommand("motor", spinmotor); 
   sCmd.addCommand("r", rationalMotors); 
   sCmd.addCommand("ping", pingMethod); 
-  sCmd.addCommand("kick", kickMaafaka); 
+  sCmd.addCommand("kick", kick);
+  sCmd.addCommand("grab", grab); 
+  sCmd.addCommand("ungrab", ungrab); 
   sCmd.addCommand("mux", muxTest); 
   SDPsetup();
   helloWorld();
