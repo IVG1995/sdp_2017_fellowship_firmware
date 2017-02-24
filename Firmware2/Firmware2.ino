@@ -12,26 +12,27 @@
 //define LEFT 3
 
 //Kickers in front
-#define FRONT 3
+#define FRONT 4
 #define RIGHT 2
-#define BACK 4
-#define LEFT 5
+#define BACK 5
+#define LEFT 3
 
-#define KICKERS 0
-#define GRABBER 1
+#define KICKERS 1
+#define GRABBER 0
 
 #define OPADDR 0x5A
 #define REGADDR 0x04
 
 #define KICKERDELAY 10
 
+
 boolean requestStopKick = 0;
 boolean kickerStatus = 0;
 
 int zeroPosition;
 
-
-
+#define ROTARY_KICK_PULSES 18
+#define ROTARY_KICKER_POSITION 1
 #define ROTARY_SLAVE_ADDRESS 5
 #define ROTARY_COUNT 6
 #define PRINT_DELAY 200
@@ -42,6 +43,26 @@ int positions[ROTARY_COUNT] = {0};
 int run = 0;
 
 SerialCommand sCmd;
+
+void setup(){
+  Wire.begin();
+  sCmd.addCommand("f", dontMove); 
+  sCmd.addCommand("h", completeHalt); 
+  sCmd.addCommand("motor", spinmotor); 
+  sCmd.addCommand("r", rationalMotors); 
+  sCmd.addCommand("ping", pingMethod); 
+  sCmd.addCommand("kick", kick);
+  sCmd.addCommand("grab", grab); 
+  sCmd.addCommand("ungrab", ungrab); 
+  sCmd.addCommand("mux", muxTest);
+  SDPsetup();
+  helloWorld();
+  printMotorPositions();
+}
+
+void loop(){
+  sCmd.readSerial();
+}
 
 void muxTest(){
   int motor = atoi(sCmd.next());
@@ -60,11 +81,6 @@ void muxTest(){
   Wire.write(motor);
   Wire.write(0);
   Serial.println(Wire.endTransmission());
-}
-
-
-void loop(){
-  sCmd.readSerial();
 }
 
 
@@ -103,9 +119,9 @@ void rationalMotors(){
   Serial.println(right);
 
   motorControl(FRONT, front);
-  motorControl(BACK, back);
+  motorControl(BACK, -back);
   motorControl(LEFT, left);
-  motorControl(RIGHT, right);
+  motorControl(RIGHT, -right);
 }
 
 void pingMethod(){
@@ -128,9 +144,15 @@ void kicker(){
 }
 
 void kick(){
+  updateMotorPositions();
+  int targetPosition = positions[ROTARY_KICKER_POSITION] - ROTARY_KICK_PULSES;
+  printMotorPositions();
   motorBackward(KICKERS, 100);
-  delay(700);
+  while(abs(positions[ROTARY_KICKER_POSITION]) < abs(targetPosition)){
+    updateMotorPositions();
+  }
   motorStop(KICKERS);
+  printMotorPositions();
 }
 
 void grab(){
@@ -155,21 +177,15 @@ void completeHalt(){
 }
 
 
-void setup(){
-  Wire.begin();
-  sCmd.addCommand("f", dontMove); 
-  sCmd.addCommand("h", completeHalt); 
-  sCmd.addCommand("motor", spinmotor); 
-  sCmd.addCommand("r", rationalMotors); 
-  sCmd.addCommand("ping", pingMethod); 
-  sCmd.addCommand("kick", kick);
-  sCmd.addCommand("grab", grab); 
-  sCmd.addCommand("ungrab", ungrab); 
-  sCmd.addCommand("mux", muxTest); 
-  SDPsetup();
-  helloWorld();
+void updateMotorPositions() {
+  // Request motor position deltas from rotary slave board
+  Wire.requestFrom(ROTARY_SLAVE_ADDRESS, ROTARY_COUNT);
+  
+  // Update the recorded motor positions
+  for (int i = 0; i < ROTARY_COUNT; i++) {
+    positions[i] += (int8_t) Wire.read();  // Must cast to signed 8-bit type
+  }
 }
-
 
 void printMotorPositions() {
   Serial.print("Motor positions: ");
