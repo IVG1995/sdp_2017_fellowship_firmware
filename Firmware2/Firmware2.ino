@@ -52,6 +52,8 @@ void setup(){
   sCmd.addCommand("r", rationalMotors); 
   sCmd.addCommand("ping", pingMethod); 
   sCmd.addCommand("kick", kick);
+  sCmd.addCommand("kick_continuously", kickerStart);
+  sCmd.addCommand("stop_kicking", kickerStop);
   sCmd.addCommand("grab", grab); 
   sCmd.addCommand("ungrab", ungrab); 
   sCmd.addCommand("mux", muxTest);
@@ -83,12 +85,19 @@ void muxTest(){
   Serial.println(Wire.endTransmission());
 }
 
+void kickerStart(){
+  motorBackward(KICKERS, 100);
+}
+
+void kickerStop(){
+  motorStop(KICKERS);
+}
 
 void dontMove(){
-  motorControl(FRONT, 0);
-  motorControl(BACK, 0);
-  motorControl(LEFT, 0);
-  motorControl(RIGHT, 0);
+  motorStop(FRONT);
+  motorStop(BACK);
+  motorStop(LEFT);
+  motorStop(RIGHT);
 }
 
 void spinmotor(){
@@ -118,8 +127,8 @@ void rationalMotors(){
   Serial.println(left);
   Serial.println(right);
 
-  motorControl(FRONT, front);
-  motorControl(BACK, -back);
+  motorControl(FRONT, -front);
+  motorControl(BACK, back);
   motorControl(LEFT, left);
   motorControl(RIGHT, -right);
 }
@@ -170,10 +179,10 @@ void ungrab(){
 
 void completeHalt(){
   motorAllStop();
-  motorControl(FRONT, 0);
-  motorControl(BACK, 0);
-  motorControl(LEFT, 0);
-  motorControl(RIGHT, 0);
+  //motorControl(FRONT, 0);
+  //motorControl(BACK, 0);
+  //motorControl(LEFT, 0);
+  //motorControl(RIGHT, 0);
 }
 
 
