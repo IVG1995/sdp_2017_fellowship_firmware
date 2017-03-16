@@ -46,16 +46,16 @@ SerialCommand sCmd;
 
 void setup(){
   Wire.begin();
-  sCmd.addCommand("f", dontMove); 
-  sCmd.addCommand("h", completeHalt); 
-  sCmd.addCommand("motor", spinmotor); 
-  sCmd.addCommand("r", rationalMotors); 
-  sCmd.addCommand("ping", pingMethod); 
+  sCmd.addCommand("f", dontMove);
+  sCmd.addCommand("h", completeHalt);
+  sCmd.addCommand("motor", spinmotor);
+  sCmd.addCommand("r", rationalMotors);
+  sCmd.addCommand("ping", pingMethod);
   sCmd.addCommand("kick", kick);
   sCmd.addCommand("kick_continuously", kickerStart);
   sCmd.addCommand("stop_kicking", kickerStop);
-  sCmd.addCommand("grab", grab); 
-  sCmd.addCommand("ungrab", ungrab); 
+  sCmd.addCommand("grab", grab);
+  sCmd.addCommand("ungrab", ungrab);
   sCmd.addCommand("mux", muxTest);
   SDPsetup();
   helloWorld();
@@ -122,10 +122,14 @@ void rationalMotors(){
   int back  = atoi(sCmd.next());
   int left  = atoi(sCmd.next());
   int right = atoi(sCmd.next());
-  Serial.println(front);
-  Serial.println(back);
-  Serial.println(left);
-  Serial.println(right);
+  Serial.print(front);
+  Serial.print(" ");
+  Serial.print(back);
+  Serial.print(" ");
+  Serial.print(left);
+  Serial.print(" ");
+  Serial.print(right);
+  Serial.println();
 
   motorControl(FRONT, -front);
   motorControl(BACK, back);
@@ -143,7 +147,8 @@ void kicker(){
     motorStop(KICKERS);
   } else if (type == 1){
     Serial.print("Starting From: ");
-    Serial.println(positions[0] % 40);
+    Serial.print(positions[0] % 40);
+    Serial.println();
     motorForward(KICKERS, 100);
     kickerStatus = 1;
   } else {
@@ -189,7 +194,7 @@ void completeHalt(){
 void updateMotorPositions() {
   // Request motor position deltas from rotary slave board
   Wire.requestFrom(ROTARY_SLAVE_ADDRESS, ROTARY_COUNT);
-  
+
   // Update the recorded motor positions
   for (int i = 0; i < ROTARY_COUNT; i++) {
     positions[i] += (int8_t) Wire.read();  // Must cast to signed 8-bit type
@@ -205,5 +210,3 @@ void printMotorPositions() {
   Serial.println();
   delay(PRINT_DELAY);  // Delay to avoid flooding serial out
 }
-
-
