@@ -31,8 +31,11 @@ boolean kickerStatus = 0;
 
 int zeroPosition;
 
-#define ROTARY_KICK_PULSES 18
+#define ROTARY_KICK_PULSES 25
 #define ROTARY_KICKER_POSITION 1
+#define ROTARY_GRAB_PULSES 2
+#define ROTARY_UNGRAB_PULSES 3
+#define ROTARY_GRABBER_POSITION 0
 #define ROTARY_SLAVE_ADDRESS 5
 #define ROTARY_COUNT 6
 #define PRINT_DELAY 200
@@ -52,14 +55,15 @@ void setup(){
   sCmd.addCommand("r", rationalMotors); 
   sCmd.addCommand("ping", pingMethod); 
   sCmd.addCommand("kick", kick);
-  sCmd.addCommand("kick_continuously", kickerStart);
+  sCmd.addCommand("start_kicking", kickerStart);
   sCmd.addCommand("stop_kicking", kickerStop);
   sCmd.addCommand("grab", grab); 
   sCmd.addCommand("ungrab", ungrab); 
   sCmd.addCommand("mux", muxTest);
+  sCmd.addCommand("p", printMotorPositions);
+  sCmd.addCommand("u", updateMotorPositions);
   SDPsetup();
   helloWorld();
-  printMotorPositions();
 }
 
 void loop(){
@@ -122,10 +126,6 @@ void rationalMotors(){
   int back  = atoi(sCmd.next());
   int left  = atoi(sCmd.next());
   int right = atoi(sCmd.next());
-  Serial.println(front);
-  Serial.println(back);
-  Serial.println(left);
-  Serial.println(right);
 
   motorControl(FRONT, -front);
   motorControl(BACK, back);
@@ -165,15 +165,29 @@ void kick(){
 }
 
 void grab(){
-  motorForward(GRABBER, 100);
-  delay(500);
+  updateMotorPositions();
+  int targetPosition = positions[ROTARY_GRABBER_POSITION] - ROTARY_GRAB_PULSES;
+  motorForward(GRABBER, 70);
+  while(positions[ROTARY_GRABBER_POSITION] != targetPosition){
+    Serial.print("target position: " + targetPosition);
+    updateMotorPositions();
+    printMotorPositions();
+  }
   motorStop(GRABBER);
 }
 
 void ungrab(){
-  motorBackward(GRABBER, 100);
-  delay(300);
-  motorStop(GRABBER);
+  updateMotorPositions();
+  int targetPosition = positions[ROTARY_GRABBER_POSITION] + ROTARY_UNGRAB_PULSES;
+  motorBackward(GRABBER, 80);
+  while(positions[ROTARY_GRABBER_POSITION] != targetPosition){
+    Serial.print("target position: " + targetPosition);
+    updateMotorPositions();
+    printMotorPositions();
+  }
+  
+  motorBackward(GRABBER, 30);
+
 }
 
 
